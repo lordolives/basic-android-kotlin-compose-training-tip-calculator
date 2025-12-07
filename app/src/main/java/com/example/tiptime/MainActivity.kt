@@ -61,14 +61,26 @@ import com.example.tiptime.ui.theme.TipTimeTheme
 import java.text.NumberFormat
 
 class MainActivity : ComponentActivity() {
+
+    // onCreate is part of the Android Lifecycle which is called when the application is created
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        // Utilize the entire display area of a device
         enableEdgeToEdge()
+
+        // Execute onCreate from parent class.
         super.onCreate(savedInstanceState)
+
+        // Defines the layout
         setContent {
+
+            // Applies the project theme
             TipTimeTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
+
+                // Construct for displaying UI elements
+                Surface(modifier = Modifier.fillMaxSize()) {
+
+                    // Call the TipTimeLayout Composable function.
                     TipTimeLayout()
                 }
             }
@@ -76,18 +88,34 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Displays the layout for our TipTime UI.
+ */
 @Composable
 fun TipTimeLayout() {
+
+    // Maintain the state for the entered bill amount
     var amountInput by remember { mutableStateOf("") }
+
+    // Maintain the state for the entered tip percentage amount
     var tipInput by remember { mutableStateOf("") }
+
+    // Maintain the state for the round up switch.
     var roundUp by remember { mutableStateOf(false) }
 
+    // If the amount is null it will set 0.0
     val amount = amountInput.toDoubleOrNull() ?: 0.0
+
+    // If the tip percent is null it will set 0.0
     val tipPercent = tipInput.toDoubleOrNull() ?: 0.0
+
+    // Calculate the tip by calling the calculateTip function
     val tip = calculateTip(amount, tipPercent, roundUp)
 
+    // Access to the focus manager, used to control user focus for the UI
     val focusManager = LocalFocusManager.current
 
+    // Display the layout as a column
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -97,50 +125,73 @@ fun TipTimeLayout() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Calculate Tip
         Text(
             text = stringResource(R.string.calculate_tip),
             modifier = Modifier
                 .padding(bottom = 16.dp, top = 40.dp)
                 .align(alignment = Alignment.Start)
         )
+        // Bill amount
         EditNumberField(
             label = R.string.bill_amount,
+            // Defines the virtual keyboard type
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
+                imeAction = ImeAction.Next  // Set the action button to a next button
             ),
+            // Defines the virtual keyboard action button
             keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
             )
             ,
             value = amountInput,
-            onValueChanged = { amountInput = it },
+            onValueChanged = {
+                amountInput = it    // Updates our remember variable
+            },
             modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth()
         )
+        // Tip %
         EditNumberField(
             label = R.string.how_was_the_service,
+            // Defines the virtual keyboard type
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Done  // Set the action button to a checkbox button
             ),
+            // Defines the virtual keyboard action button
             keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() }
+                onDone = {
+                    focusManager.clearFocus()
+                }
             ),
             value = tipInput,
-            onValueChanged = { tipInput = it }
+            onValueChanged = {
+                tipInput = it   // Updates our remember variable
+            }
         )
+        // Round up tip switch
         RoundTheTipRow(
             roundUp = roundUp,
-            onRoundUpChanged = { roundUp = it }
+            onRoundUpChanged = {
+                roundUp = it
+            }
         )
+        // Tip Amount
         Text(
             text = stringResource(R.string.tip_amount, tip),
             style = MaterialTheme.typography.displaySmall
         )
+        // Add space to bottom of UI
         Spacer(modifier = Modifier.height(150.dp))
     }
 }
 
+/**
+ * Draws a number field
+ */
 @Composable
 fun EditNumberField(
     @StringRes label: Int,
@@ -161,6 +212,9 @@ fun EditNumberField(
     )
 }
 
+/**
+ * Draw a text field and switch on the same row.
+ */
 @Composable
 fun RoundTheTipRow(
     roundUp: Boolean,
@@ -173,10 +227,15 @@ fun RoundTheTipRow(
             .size(48.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Round up tip?
         Text(text = stringResource(R.string.round_up_tip))
+
+        // Toggle switch
         Switch(
             checked = roundUp,
             colors = SwitchDefaults.colors(
+                // This is for the purpose of the tutorial and it was mentioned this should be
+                // avoided, because hard coded colors, may not work in all situations.
                 uncheckedThumbColor = Color.DarkGray
             ),
             onCheckedChange = onRoundUpChanged,
@@ -203,6 +262,9 @@ private fun calculateTip(
     return NumberFormat.getCurrencyInstance().format(tip)
 }
 
+/**
+ * Allows the IDE to render the UI without the need for an emulator.
+ */
 @Preview(showBackground = true)
 @Composable
 fun TipTimeLayoutPreview() {
